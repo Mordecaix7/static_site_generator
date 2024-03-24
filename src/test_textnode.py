@@ -10,7 +10,9 @@ class TestTextNode(unittest.TestCase):
         self.assertEqual(node, node2)
 
     def test_repr(self):
-        node = TextNode()
+        node = TextNode("This is a text node", "bold")
+        self.assertEqual("TextNode(This is a text node, bold, None)", repr(node))
+
 
 
 if __name__ == "__main__":
