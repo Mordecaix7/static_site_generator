@@ -37,11 +37,11 @@ class TestLeafNode(unittest.TestCase):
             },
             "link": {
                 "node_creation": ["This is a link", "link", {"href": "https://www.ex.com"}],
-                "output_validation": "<a href=\"https://www.ex.com\">This is a link</a>"
+                "output_validation": "<a href=\'https://www.ex.com\'>This is a link</a>"
             },
             "img": {
                 "node_creation": ["image.jpg", "img", {"alt": "Alt text"}],
-                "output_validation": "<img src=\"image.jpg\" alt=\"Alt text\">"
+                "output_validation": "<img src=\'image.jpg\' alt=\'Alt text\'>"
             }
 
         }
