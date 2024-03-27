@@ -44,24 +44,98 @@ class BlockHandler:
         blocks_as_text_nodes = [self.block_to_text_nodes(block) for block in self.blocks]
         return blocks_as_text_nodes
 
-    def block_to_text_nodes(self, block):
-        tag_stack = []
-        block_as_text_node = None
-        for index, character in enumerate(block):
-        # Initialize block.
-        # If it does not start with a tag set block_as_text_node = ["", "text"].
-        # Append ["text", index] to tag_stack.
-        # If the following characters are not an opening tag, concatenate the character to block_as_text_node[0]
-        # If no tags are found by the end of the string, pop text tag from stack.
-        # Else
+    def new_node(self, content=[], node_type=None, url=None, props={}):
+        node = {
+            "content": content,
+            "type": node_type,
+            "url": url,
+            "props": props,
+        }
+        return node
 
-        # Iterate through string.
-        # Check if there is an opening tag.
-        #
+    def block_to_text_nodes(self, string, pos=0):
+        node = {
+            "content": [],
+            "type": None,
+            "url": None,
+            "props": None,
+        }
 
-        return
+        while pos < len(string):
 
-    def starts_with_tag(self):
+            result = self.starts_with_tag(string[pos:])
+            if result[0] is not None:
+                node["type"] = result[1]
+
+        return node
+
+    def starts_with_tag(self, string, pos):
+        if type(string) is not str: # handle errors
+            raise TypeError(f"{type(string)} is not a string.")
+        if type(pos) is not int or pos < 0 or pos > len(string) - 1:
+            raise ValueError(f"{pos} of type({type(pos)}) must be an int greater than 0 and less than length of string.")
+
+        # Handle per symbol
+        # Handle escape case, but in good format this shouldn't be an issue.
+        # If the index is at the start of the string (not possible to be escaped) or is not escaped.
+        if pos == 0 or (pos > 0 and string[pos-1] != "\\"):
+            if string[pos] == "*" and string[pos+1] != "*":
+                return True, "ital", pos + 1
+                # Then this must be italic case.
+            elif string[pos] == "_" and string[pos+1] != "_":
+                return True, "ital", pos + 1
+                # Then this must be italic case.
+            elif string[pos] == "*" and string[pos+1] == "*":
+                return True, "bold", pos + 2
+                # Then this must be bold.
+            elif string[pos] == "_" and string[pos+1] == "_":
+                return True, "bold", pos + 2
+                # Then this must be bold.
+            elif string[pos] == "`" and string[pos+1] != "`":
+                return True, "code", pos + 1
+                # Then this must be code.
+            elif string[pos] == "`" and string[pos:pos+3] == "```":
+                return True, "code", pos + 3
+                # then this must be code.
+            elif string[pos] == "!" and self.find_link_or_img(string, pos) is not None:
+                # then this must be an image.
+                return
+            elif string[pos] == "[" and self.find_link_or_img(string, pos) is not None:
+                # then this must be a link.
+                return
+            else:
+                return False, "text", pos
+
+
+    def is_closing_tag(self):
+        pass
+        # If you reach the end of string/branch without needing to recurse, return node.
+    def find_link_or_img(self, string, i):
+        # check if img/link is present at i. If so, return the end index, value, and type. =
+        type = None
+        # First, check if current character is not-escaped.
+        if i > 0 and string[i - 1] == "\\":
+            return None
+        # Now check if the pattern for a link or img is found.
+        if string[i] == "[" and string[i-1] != "!":  # Look for a link in markdown format
+            pattern = r'\[.*?\]\(.*?\)'
+            type = "link"
+
+        elif string[i] == "!" and (i + 1 < len(string) and string[i + 1] == "["):
+            pattern = r'\!\[.*?\]\(.*?\)'
+            type = "img"
+        else:
+            return None  # Not the start of a link or image
+
+        # Use regex to search for a complete link or image pattern from index i
+        match = re.search(pattern, string[i:])
+        if match:
+            # Calculate the end index of the pattern
+            end_index = i + match.end() - 1
+            # Return the end index and the matched slice
+            return end_index, string[i:end_index + 1], type  # include the end char in slice
+        else:
+            return None
 
 
 
